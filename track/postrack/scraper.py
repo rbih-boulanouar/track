@@ -9,7 +9,7 @@ cookiesession = secrets.token_hex(5)
 PHPSESSID = secrets.token_hex(5)
 headers1={
     'Host': 'aptracking.poste.dz',
-    'Cookie': 'cookiesession1=120; PHPSESSID=120',
+    'Cookie': 'cookiesession1=1250; PHPSESSID=1250',
     'Cache-Control': 'max-age=0',
     'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120"',
     'Sec-Ch-Ua-Mobile': '?0',
@@ -61,9 +61,9 @@ data={
     
 }
 
-#fieldLabel02Std
+#fieldLabel02Stdsdfg
 request1=requests.post(url1,headers=headers1,data=data, timeout=5)
-time.sleep(2)
+print(request1.content)
 request2=requests.get(url2,headers=headers2,timeout=5)
 content=request2.content
 soup=BeautifulSoup(content,'html5lib')

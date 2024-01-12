@@ -1,6 +1,5 @@
 from django.shortcuts import render
 import requests
-import time
 from bs4 import BeautifulSoup
 import secrets
 import itertools as it
@@ -9,9 +8,12 @@ from django.views.decorators.csrf import csrf_exempt
 @csrf_exempt
 def index(request):
     if request.POST.get('tnumber'):
-        return render(request,'index.html',{'data':scraper(request.POST.get('tnumber')), 'tn':request.POST.get('tnumber')})
+        if 'Identifiant invalide' not in scraper(request.POST.get('tnumber')):
+            return render(request,'index.html',{'data':scraper(request.POST.get('tnumber')), 'tn':request.POST.get('tnumber')})
+        else:
+            return render(request,'index.html',{'error':"لم يتم تسجيل طردك عند البريد الجزائري"})
     else:
-        return render(request,'index.html',{'data':""})
+        return render(request,'index.html')
 
 def scraper(tnumber):
     url1="https://aptracking.poste.dz/index.php"
@@ -20,7 +22,7 @@ def scraper(tnumber):
     PHPSESSID = secrets.token_hex(5)
     headers1={
         'Host': 'aptracking.poste.dz',
-        'Cookie': 'cookiesession1=120; PHPSESSID=120',
+        'Cookie': f'cookiesession1={cookiesession}; PHPSESSID={PHPSESSID}',
         'Cache-Control': 'max-age=0',
         'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120"',
         'Sec-Ch-Ua-Mobile': '?0',
@@ -42,7 +44,7 @@ def scraper(tnumber):
     }
     headers2={
         'Host': 'aptracking.poste.dz',
-        'Cookie': 'cookiesession1=120; PHPSESSID=120',
+        'Cookie': f'cookiesession1={cookiesession}; PHPSESSID={PHPSESSID}',
         'Cache-Control': 'max-age=0',
         'Upgrade-Insecure-Requests': '1',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.199 Safari/537.36',
@@ -72,13 +74,12 @@ def scraper(tnumber):
 
     #fieldLabel02Std
     request1=requests.post(url1,headers=headers1,data=data, timeout=5)
-    #time.sleep(2)
     request2=requests.get(url2,headers=headers2,timeout=5)
     content=request2.content
+    if '15/08/2023' in str(content):
+        return "Identifiant invalide"
     soup=BeautifulSoup(content,'html5lib')
-
     table=soup.find("table", {"class": "display"})
-
     tbody=table.findAll("td")
     mylist=[]
     for i in tbody:
